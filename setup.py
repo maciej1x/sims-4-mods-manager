@@ -16,7 +16,8 @@ from PIL import ImageTk, Image
 import zipfile
 import shutil
 import operator
-
+import requests
+import bs4
 
 #============
 #choose directory
@@ -32,10 +33,7 @@ def ChooseDirectory():
 #Image Download
 #============
 def ImageDownload(url, path, filename):
-    from PIL import Image
-    import requests
-    import bs4
-    import os
+
     
     if not os.path.exists(path+'/images/'):
         os.makedirs(path+'/images/')
