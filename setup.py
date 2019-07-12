@@ -18,11 +18,12 @@ import shutil
 import operator
 import requests
 import bs4
+from getpass import getuser
 
 #============
 #choose directory
 #============
-def ChooseDirectory():
+def choose_directory():
     directory = fd.askdirectory()
     folder_path.configure(state='normal')
     folder_path.delete(0,tk.END)
@@ -32,7 +33,7 @@ def ChooseDirectory():
 #============
 #Image Download
 #============
-def ImageDownload(url, path, filename):
+def image_download(url, path, filename):
 
     
     if not os.path.exists(path+'/images/'):
@@ -49,7 +50,7 @@ def ImageDownload(url, path, filename):
 #============
 #log window
 #============
-def LogWindow(window, text):
+def log_window(window, text):
     window.configure(state='normal')
     window.insert(tk.INSERT, text+'\n')
     window.see(tk.END)
@@ -58,7 +59,7 @@ def LogWindow(window, text):
 #============
 #label update
 #============
-def LabelUpdate(label, text):
+def label_update(label, text):
     label.configure(text = text)
     label.update()
 
@@ -66,18 +67,21 @@ def LabelUpdate(label, text):
 #============
 #list files in directory
 #============
-def ListOfPackages(path):
+def list_of_packages(path):
     files=[]
-    for file in os.listdir(path):
-        if os.path.isfile(os.path.join(path, file)):
-            files.append(file)
+    try:
+        for file in os.listdir(path):
+            if os.path.isfile(os.path.join(path, file)):
+                files.append(file)
+    except:
+        FileNotFoundError
     return files
 
 #============
 #last modified file in directory
 #============
-def LastModified(sciezka):
-    packages = ListOfPackages(sciezka)
+def last_modified(sciezka):
+    packages = list_of_packages(sciezka)
     pack=[]
     for i in range(len(packages)):
         pack.append([packages[i],os.path.getmtime(sciezka+'/' + packages[i])])
@@ -91,30 +95,30 @@ def LastModified(sciezka):
 #============
 #remove duplicate
 #============
-def RemoveDuplicate(sciezka):
-    najnowszy=LastModified(sciezka)
-    packages = ListOfPackages(sciezka)
+def remove_duplicate(sciezka):
+    najnowszy=last_modified(sciezka)
+    packages = list_of_packages(sciezka)
     for i in range(len(packages)):
         if najnowszy[0][:-12]+'.package'==packages[i]:
             os.remove(sciezka+'/'+najnowszy[0])
-            LogWindow(status_window, "    File {} already exists. Deleted.".format(najnowszy[0]))
+            log_window(status_window, "    File {} already exists. Deleted.".format(najnowszy[0]))
 
 
-def RemoveDuplicateImage(sciezka):
+def remove_duplicate_image(sciezka):
     sciezka=sciezka+'/images'
-    najnowszy=LastModified(sciezka)
-    packages = ListOfPackages(sciezka)
+    najnowszy=last_modified(sciezka)
+    packages = list_of_packages(sciezka)
     for i in range(len(packages)):
         if najnowszy[0][:-16]+'.package.jpg'==packages[i]:
             os.remove(sciezka+'/'+najnowszy[0])
-            LogWindow(status_window, "    File {} already exists. Deleted.".format(najnowszy[0]))
+            log_window(status_window, "    File {} already exists. Deleted.".format(najnowszy[0]))
 
 
 #============
 #download
 #input: url, download directory
 #============
-def Download(url, sciezka):
+def download(url, sciezka):
     czas_start2 = time.time()
     czas = [60,60,10,10]
     chromeOptions = webdriver.ChromeOptions()
@@ -150,20 +154,20 @@ def Download(url, sciezka):
     #3 minutes to download
     x=0
     while x<180:
-        if LastModified(sciezka)[0][-11:] != '.crdownload' and LastModified(sciezka)[0][-4:] != '.tmp' and LastModified(sciezka)[1]>czas_start2:
-            LogWindow(status_window, "Downloaded: {}".format(LastModified(sciezka)[0]))
+        if last_modified(sciezka)[0][-11:] != '.crdownload' and last_modified(sciezka)[0][-4:] != '.tmp' and last_modified(sciezka)[1]>czas_start2:
+            log_window(status_window, "Downloaded: {}".format(last_modified(sciezka)[0]))
             x=181
-            ImageDownload(url,sciezka,LastModified(sciezka)[0])
+            image_download(url,sciezka,last_modified(sciezka)[0])
             time.sleep(2)
-            if LastModified(sciezka)[0][-4:] == '.zip':
+            if last_modified(sciezka)[0][-4:] == '.zip':
                 
-                zip_ref = zipfile.ZipFile(sciezka+'/'+LastModified(sciezka)[0], 'r')
-                nazwazip=LastModified(sciezka)[0]
+                zip_ref = zipfile.ZipFile(sciezka+'/'+last_modified(sciezka)[0], 'r')
+                nazwazip=last_modified(sciezka)[0]
                 zip_ref.extractall(sciezka)
                 
                 ziplist=zipfile.ZipFile.namelist(zip_ref)
                 for z in range(len(ziplist)):
-                    LogWindow(status_window, "   Unziped: {}".format(ziplist[z]))
+                    log_window(status_window, "   Unziped: {}".format(ziplist[z]))
                 for a in range(len(ziplist)):
                     shutil.copyfile(sciezka+'/images/'+nazwazip+'.jpg', sciezka+'/images/'+ziplist[a]+'.jpg')
                 zip_ref.close()
@@ -175,18 +179,18 @@ def Download(url, sciezka):
             time.sleep(1)
             x=x+1
     if x==180:
-        LogWindow(status_window, "Timeout. File has not been downloaded..")
+        log_window(status_window, "Timeout. File has not been downloaded..")
         browser.close()
 
-    RemoveDuplicate(sciezka)
-    RemoveDuplicateImage(sciezka)
+    remove_duplicate(sciezka)
+    remove_duplicate_image(sciezka)
     
 
 
 #============
 #START
 #============
-def Start():
+def start():
     #============
     #Disable window with urls
     #============
@@ -205,7 +209,7 @@ def Start():
     links = links.split('\n')
     while links.count('') > 0:
         links.remove('')
-    LogWindow(status_window, "URLs: {}".format(len(links)))
+    log_window(status_window, "URLs: {}".format(len(links)))
     link_count.configure(text = 'URLs: {}'.format(len(links)))
     
     '''
@@ -225,7 +229,7 @@ def Start():
     #Downloading
     #============
     for mod in range(len(links)):
-        Download(links[mod],path)
+        download(links[mod],path)
     
 
     #============
@@ -234,7 +238,7 @@ def Start():
     links_list.configure(state='normal')
     bar['value']=100
     bar.update()
-    Refresh()
+    refresh()
 
 
 
@@ -295,11 +299,11 @@ folder_header.grid(column=1, row=1, sticky = 'w', padx=5)
 #directory with mods 
 folder_path = tk.Entry(ptab, width=57, state='normal', textvariable = path)
 folder_path.grid(column=1, row=2, sticky = 'w',  padx=5)
-folder_path.insert(tk.INSERT, 'C:/Users/USERNAME/Documents/Electronic Arts/The Sims 4/Mods')
+folder_path.insert(tk.INSERT, 'C:/Users/{}/Documents/Electronic Arts/The Sims 4/Mods'.format(getuser()))
 #folder_path.configure(state='disabled')
 
 #select directory button
-folder_btn = tk.Button(ptab, text = "Select", state='normal', command=ChooseDirectory)
+folder_btn = tk.Button(ptab, text = "Select", state='normal', command=choose_directory)
 folder_btn.grid(column=3, row=2, sticky='w')
 
 
@@ -310,10 +314,10 @@ status_header.grid(column=1, row=3, sticky='nw', padx=5)
 #log window 
 status_window = scrolledtext.ScrolledText(ptab, width=63, height=33, state='disabled', bg='lightgrey', font=('',8))
 status_window.grid(column=1, row=4, columnspan=3, rowspan=8, sticky='nw', padx=5)
-LogWindow(status_window, "In the window on the left paste URLs from thesimsrecource.com in new lines.\nFor example:\nhttps://www.thesimsresource.com/downloads/details/category/sims4-mods-poses/title/the-wall-and-me-pose-pack-1/id/1449049/\nhttps://www.thesimsresource.com/downloads/details/category/sims4-hair-facial-eyebrows/title/ea-n15-eyebrow-recolor/id/1447613/\netc.")
+log_window(status_window, "In the window on the left paste URLs from thesimsrecource.com in new lines.\nFor example:\nhttps://www.thesimsresource.com/downloads/details/category/sims4-mods-poses/title/the-wall-and-me-pose-pack-1/id/1449049/\nhttps://www.thesimsresource.com/downloads/details/category/sims4-hair-facial-eyebrows/title/ea-n15-eyebrow-recolor/id/1447613/\netc.")
 
 #start button
-start_btn = tk.Button(ptab, text = 'Start', bg='lightgreen', font = ('',11), command=Start)
+start_btn = tk.Button(ptab, text = 'Start', bg='lightgreen', font = ('',11), command=start)
 start_btn.grid(column=3, row=0)
 
 
@@ -330,8 +334,8 @@ downloaded_count.grid(column=0, row=10, sticky='w')
 #============
 #tab2 - manage
 #============
-def FilesWithTime(sciezka):
-    installed_list = ListOfPackages(sciezka)
+def files_with_time(sciezka):
+    installed_list = list_of_packages(sciezka)
     
     installed_list_with_time=[]
     for i in range(len(installed_list)):
@@ -340,12 +344,12 @@ def FilesWithTime(sciezka):
     return installed_list_with_time
 
 
-def Refresh():
-    ListBoxUpdate()
-    SelectImages()
+def refresh():
+    list_box_update()
+    select_images()
 
 
-def Delete():
+def delete():
     sciezka_plik = folder_path.get()+'/'
     sciezka_obraz = sciezka_plik+'/images/'
     checked = lb_check.get(0, tk.END)
@@ -355,16 +359,16 @@ def Delete():
             os.remove(sciezka_plik+names[i])
             if os.path.isfile(sciezka_obraz+names[i]+'.jpg'):
                 os.remove(sciezka_obraz+names[i]+'.jpg')
-    Refresh()
+    refresh()
 
 
-def Help():
+def call_help():
     win = tk.Toplevel()
     win.title('Help')
     win.geometry('510x510+40+40')
     status_window = scrolledtext.ScrolledText(win, state='disabled', height=35,bg='white', font=('',8))
     status_window.grid(column=0, row=0,sticky='nw', padx=5)
-    LogWindow(status_window, "HELP\n\nDownload:\nIn the window on the left paste URLs from thesimsrecource.com in new lines.\nEmpty lines does not matter.\n\n\nManage:\nTo scroll use only scrollbar!\n\nIn the column Delete double-click to select or deselect.\n\nThere is image to the mod if name of the mod is highlighted green.\nTo open image double-click on the name.\n\nRefresh button reloads list.\n\nDelete button deletes selected (higlighted red) mods.\nWARNING! Delete cannot be undone!\n\n\n\n@author: Maciej Ulaszewski\ngithub: https://github.com/ulaszewskim")
+    log_window(status_window, "HELP\n\nDownload:\nIn the window on the left paste URLs from thesimsrecource.com in new lines.\nEmpty lines does not matter.\n\n\nManage:\nTo scroll use only scrollbar!\n\nIn the column Delete double-click to select or deselect.\n\nThere is image to the mod if name of the mod is highlighted green.\nTo open image double-click on the name.\n\nRefresh button reloads list.\n\nDelete button deletes selected (higlighted red) mods.\nWARNING! Delete cannot be undone!\n\n\n\n@author: Maciej Ulaszewski\ngithub: https://github.com/ulaszewskim")
 
 
 #scrollbar
@@ -385,8 +389,8 @@ def yview(*args):
 scrollbar = tk.Scrollbar(canvas, command=yview)
 scrollbar.grid(row=1, column=6, sticky="ns")
 
-def Height():
-    installed_list_with_time = FilesWithTime(folder_path.get())
+def height():
+    installed_list_with_time = files_with_time(folder_path.get())
     if len(installed_list_with_time) >34:
         h=34
     else:
@@ -400,44 +404,44 @@ def Height():
 lb_number_header = tk.Label(canvas, text='#')
 lb_number_header.grid(column=0, row=0, sticky='w')
 
-lb_number = tk.Listbox(canvas,width=3, height=Height(), yscrollcommand=scrollbar.set)
+lb_number = tk.Listbox(canvas,width=3, height=height(), yscrollcommand=scrollbar.set)
 lb_number.grid(column=0, row=1, sticky='n')
 
 
 lb_check_header = tk.Label(canvas, text='Delete')
 lb_check_header.grid(column=1, row=0, sticky='w')
 
-lb_check = tk.Listbox(canvas, width=4, height=Height(), yscrollcommand=scrollbar.set, justify='center')
+lb_check = tk.Listbox(canvas, width=4, height=height(), yscrollcommand=scrollbar.set, justify='center')
 lb_check.grid(column=1, row=1, sticky='n')
 
 
 lb_name_header = tk.Label(canvas, text='Name')
 lb_name_header.grid(column=2, row=0, sticky='w')
 
-lb_name = tk.Listbox(canvas,width=85, height=Height(), yscrollcommand=scrollbar.set)
+lb_name = tk.Listbox(canvas,width=85, height=height(), yscrollcommand=scrollbar.set)
 lb_name.grid(column=2, row=1, sticky='n')
 
 
 lb_time_header = tk.Label(canvas, text='Install date')
 lb_time_header.grid(column=3, row=0,sticky='w')
 
-lb_time = tk.Listbox(canvas, width=20, height=Height(), yscrollcommand=scrollbar.set)
+lb_time = tk.Listbox(canvas, width=20, height=height(), yscrollcommand=scrollbar.set)
 lb_time.grid(column=3, row=1, sticky='n')
 
 #reload button
-refresh_btn = tk.Button(ztab, text = "Reload", bg='lightblue', width=9, height=3,state='normal', command=Refresh)
+refresh_btn = tk.Button(ztab, text = "Reload", bg='lightblue', width=9, height=3,state='normal', command=refresh)
 refresh_btn.grid(column=4, row=1, sticky='n', pady=10,padx=10)
 
 #delete button
-del_btn = tk.Button(ztab, text = "Delete", bg='red', width=9,height=3,state='normal', command=Delete)
+del_btn = tk.Button(ztab, text = "Delete", bg='red', width=9,height=3,state='normal', command=delete)
 del_btn.grid(column=4, row=2, sticky='n', pady=10,padx=10)
 
 #help button
-help_btn = tk.Button(ztab, text = "Help", bg='pink', width=9,height=3,state='normal', command=Help)
+help_btn = tk.Button(ztab, text = "Help", bg='pink', width=9,height=3,state='normal', command=call_help)
 help_btn.grid(column=4, row=3, sticky='n', pady=10,padx=10)
 
 
-def AddToList(listbox, i, text):
+def add_to_list(listbox, i, text):
     listbox.configure(state='normal')
     listbox.update()
     listbox.insert(i, text)
@@ -445,7 +449,7 @@ def AddToList(listbox, i, text):
     listbox.update()
 
 
-def UpdateList(listbox, i, text):
+def update_list(listbox, i, text):
     listbox.configure(state='normal')
     listbox.update()
     listbox.delete(i)
@@ -454,20 +458,20 @@ def UpdateList(listbox, i, text):
     listbox.update()
 
 
-def ListBoxUpdate():
+def list_box_update():
     lb_number.delete(0,tk.END)
     lb_check.delete(0,tk.END)
     lb_name.delete(0,tk.END)
     lb_time.delete(0,tk.END)
-    installed_list_with_time = FilesWithTime(folder_path.get())
+    installed_list_with_time = files_with_time(folder_path.get())
     for i in range(len(installed_list_with_time)):
-        AddToList(lb_number, i, i+1)
-        AddToList(lb_check,i,"")
-        AddToList(lb_name, i, installed_list_with_time[i][0])
-        AddToList(lb_time, i, time.strftime("%d %b %Y %H:%M:%S", time.localtime(installed_list_with_time[i][1])))
+        add_to_list(lb_number, i, i+1)
+        add_to_list(lb_check,i,"")
+        add_to_list(lb_name, i, installed_list_with_time[i][0])
+        add_to_list(lb_time, i, time.strftime("%d %b %Y %H:%M:%S", time.localtime(installed_list_with_time[i][1])))
 
 
-def SelectName(evt):
+def select_name(evt):
     w = evt.widget
     value = w.get(tk.ACTIVE)
     sciezka=folder_path.get()
@@ -492,37 +496,37 @@ def SelectName(evt):
         canvas.image = img
 
 
-def SelectCheck(evt):
+def select_check(evt):
     w = evt.widget
     index = int(w.curselection()[0])
     value = w.get(tk.ACTIVE)
     if value=="":
-        UpdateList(lb_check,index,"X")
+        update_list(lb_check,index,"X")
         lb_number.itemconfig(index, fg='red')
         lb_check.itemconfig(index, fg='red')
         lb_name.itemconfig(index, fg='red')
         lb_time.itemconfig(index, fg='red')
     else:
-        UpdateList(lb_check,index,"")
+        update_list(lb_check,index,"")
         lb_number.itemconfig(index, fg='black')
         lb_check.itemconfig(index, fg='black')
         lb_name.itemconfig(index, fg='black')
         lb_time.itemconfig(index, fg='black')
 
 
-lb_check.bind('<Double-1>', SelectCheck)
-lb_name.bind('<Double-1>', SelectName)
+lb_check.bind('<Double-1>', select_check)
+lb_name.bind('<Double-1>', select_name)
 
 #highlight green
-def SelectImages():
-    installed_list_with_time = FilesWithTime(folder_path.get())
+def select_images():
+    installed_list_with_time = files_with_time(folder_path.get())
     for i in range(len(installed_list_with_time)):
         sciezka=folder_path.get()
         if os.path.isfile(sciezka+'/images/'+installed_list_with_time[i][0]+'.jpg'):
             lb_name.itemconfig(i, bg='lightgreen')
 
 
-ListBoxUpdate()
-SelectImages()
+list_box_update()
+select_images()
 
 win.mainloop()
