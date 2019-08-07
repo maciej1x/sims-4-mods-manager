@@ -319,9 +319,9 @@ downloaded_count.grid(column=0, row=10, sticky='w')
 #============
 def files_with_time(sciezka):
     installed_list = list_of_packages(sciezka)
-    installed_list_with_time = []
-    for installed in installed_list:
-        installed_list_with_time.append(installed, os.path.getmtime(sciezka+'/' + installed))
+    installed_list_with_time=[]
+    for i, item in enumerate(installed_list):
+        installed_list_with_time.append([item, os.path.getmtime(sciezka+'/' + item)])
     list.sort(installed_list_with_time, key=operator.itemgetter(1), reverse=True)
     return installed_list_with_time
 
