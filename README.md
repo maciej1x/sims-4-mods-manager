@@ -1,9 +1,9 @@
 # The Sims 4 Mods Manager
 Program that downloads multiple mods from [thesimsresource.com](https://thesimsresource.com/) and manages them.
 
-![download tab](https://raw.githubusercontent.com/ulaszewskim/sims-4-mods-manager/master/README.md/images/window_download_tab.PNG)</br>
+![download tab](https://raw.githubusercontent.com/ulaszewskim/sims-4-mods-manager/master/images/window_download_tab.PNG)</br>
 
-![manage tab](https://raw.githubusercontent.com/ulaszewskim/meta-docx/master/images/window_manage_tab.PNG)</br>
+![manage tab](https://raw.githubusercontent.com/ulaszewskim/sims-4-mods-manager/master/images/window_manage_tab.PNG)</br>
 
 # Before run
 1. Install Google Chrome on your computer
