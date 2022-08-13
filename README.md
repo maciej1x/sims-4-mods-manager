@@ -1,5 +1,9 @@
 # The Sims 4 Mods Manager
-Program that downloads multiple mods from [thesimsresource.com](https://thesimsresource.com/) and manages them.
+Program that downloads multiple mods from [thesimsresource.com](https://thesimsresource.com/) (TSR) and manages them.
+
+### Why not use TSR's Custom Content Manager instead?
+TSR's Custom Content Manager is only available to VIP members via a paid subscription and you can only download one item at a time.
+With the The Sims 4 Mods Manager you can download multiple items and see the image in a separate, resizeable window instead of a tile.
 
 ![download tab](https://raw.githubusercontent.com/ulaszewskim/sims-4-mods-manager/master/images/window_download_tab.PNG)</br>
 
